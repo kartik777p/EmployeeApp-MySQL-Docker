@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8
+    networks:
+      - mynet
+    container_name: mysql_db_docker
+    environment:
+      MYSQL_ROOT_PASSWORD: Akola@123
+      MYSQL_DATABASE: empdb
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql  # ✅ FIXED
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    networks:
+      - mynet
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: Akola@123
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+
+  springboot:
+    build: .
+    networks:
+      - mynet
+    container_name: employee-app
+    ports:
+      - "8082:8080"
+    depends_on:
+      - mysql
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB: empdb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Akola@123
+
+volumes:
+  mysql_data:
+
+networks:
+  mynet:
+    driver: bridge
