@@ -36,7 +36,7 @@ pipeline {
                 // Down containers and forcibly remove any conflicting ones
                 sh 'docker-compose down --remove-orphans || true'
                 sh '''
-                    docker rm -f mysql_db_docker phpmyadmin employee-app sonarqube sonar-db || true
+                    docker rm -f mysql_db_docker phpmyadmin employee-app || true
                 '''
             }
         }
