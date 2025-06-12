@@ -2,74 +2,54 @@ pipeline {
     agent any
 
     environment {
+        // Docker image name (adjust as needed)
         DOCKER_IMAGE = "employee-app"
-        COMPOSE_FILE = "docker-compose.yml"
-        HEALTH_CHECK_URL = "http://localhost:8082/actuator/health"
     }
 
     stages {
-
         stage('Checkout') {
             steps {
-                echo "Checking out branch 'deploy'..."
-                git branch: 'deploy', url: 'https://github.com/kartik777p/EmployeeApp-MySQL-Docker.git'
+                echo "Getting code from branch deploy..."
+                git branch: 'deploy', url: 'https://github.com/your-username/your-repo.git'
             }
         }
 
         stage('Build Jar') {
             steps {
-                echo "Building Spring Boot jar using Maven..."
+                echo "Building jar with Maven..."
                 sh './mvnw clean package -DskipTests'
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Docker Image') {
             steps {
-                echo "Building Docker images using docker-compose..."
+                echo "Building docker images using docker-compose..."
                 sh 'docker-compose build'
-            }
-        }
-
-        stage('Cleanup Existing Containers') {
-            steps {
-                echo "Stopping and removing previous containers..."
-                // Down containers and forcibly remove any conflicting ones
-                sh 'docker-compose down --remove-orphans || true'
-                sh '''
-                    docker rm -f mysql_db_docker phpmyadmin employee-app || true
-                '''
             }
         }
 
         stage('Deploy Application') {
             steps {
-                echo "Starting containers with docker-compose..."
+                echo "Deploying application with docker-compose up..."
+                sh 'docker-compose down'
+                echo "After docker-compose down"
+                sh 'docker ps'
+                echo "Before docker-compose up "
                 sh 'docker-compose up -d'
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                echo "Waiting for application to start and verifying health check..."
+                echo "Checking if application is up and running..."
                 script {
-                    def maxRetries = 5
-                    def waitSeconds = 5
-                    def success = false
-
-                    for (int i = 0; i < maxRetries; i++) {
-                        def status = sh(script: "curl -s -o /dev/null -w '%{http_code}' ${HEALTH_CHECK_URL}", returnStdout: true).trim()
-                        if (status == '200') {
-                            echo "✅ Application is healthy and running!"
-                            success = true
-                            break
-                        } else {
-                            echo "⏳ Attempt ${i+1}: Not ready (Status: ${status}). Retrying in ${waitSeconds}s..."
-                            sleep waitSeconds
-                        }
-                    }
-
-                    if (!success) {
-                        error "❌ Application did not become healthy after ${maxRetries} attempts."
+                    // Adjust port and healthcheck URL as needed
+                    def appUrl = "http://localhost:8082/actuator/health"
+                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${appUrl}", returnStdout: true).trim()
+                    if (response == "200") {
+                        echo "Application deployed successfully and health endpoint is reachable!"
+                    } else {
+                        error "Application deployment failed! Health check returned status: ${response}"
                     }
                 }
             }
@@ -77,11 +57,11 @@ pipeline {
     }
 
     post {
-        success {
-            echo "🎉 Deployment pipeline completed successfully!"
-        }
         failure {
-            echo "🚨 Deployment pipeline failed. Check logs above for details."
+            echo 'Build or deployment failed! Check logs.'
+        }
+        success {
+            echo 'Pipeline finished successfully.'
         }
     }
 }
