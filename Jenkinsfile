@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "Getting code from branch deploy..."
-                git branch: 'deploy', url: 'https://github.com/your-username/your-repo.git'
+                git branch: 'deploy', url: 'https://github.com/kartik777p/EmployeeApp-MySQL-Docker.git'
             }
         }
 
