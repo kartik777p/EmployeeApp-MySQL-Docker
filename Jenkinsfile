@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+
+    environment {
+        // Docker image name (adjust as needed)
+        DOCKER_IMAGE = "employee-app"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "Getting code from branch deploy..."
+                git branch: 'deploy', url: 'https://github.com/kartik777p/EmployeeApp-MySQL-Docker.git'
+            }
+        }
+
+        stage('Build Jar') {
+            steps {
+                echo "Building jar with Maven..."
+                sh './mvnw clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building docker images using docker-compose..."
+                sh 'docker-compose build'
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                echo "Deploying application with docker-compose up..."
+                sh 'docker-compose down'
+                echo "After docker-compose down"
+                sh 'docker ps'
+                echo "Before docker-compose up "
+                sh 'docker-compose up -d'
+            }
+        }
+
+        stage('Post Deployment') {
+                    steps {
+                        echo '✅ Application Deployed Successfully!'
+                    }
+                }
+            }
+
+            post {
+                failure {
+                    echo '❌ Deployment Failed. Please check the logs.'
+                }
+            }
+        }
+
+

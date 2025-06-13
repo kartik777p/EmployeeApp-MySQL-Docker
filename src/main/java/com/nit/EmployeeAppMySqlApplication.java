@@ -8,6 +8,7 @@ public class EmployeeAppMySqlApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(EmployeeAppMySqlApplication.class, args);
+		System.out.println("SpringBoot Application Started!");
 	}
 
 }
