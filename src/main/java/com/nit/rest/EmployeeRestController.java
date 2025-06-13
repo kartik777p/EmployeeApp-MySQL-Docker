@@ -12,16 +12,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/employees")
 @Tag(name = "Employee API", description = "CRUD operations for Employee management")
-@Slf4j  //initialized by lombok
+@Slf4j
 public class EmployeeRestController {
 
+    private final IEmployeeRepository repository;
+
     @Autowired
-    private IEmployeeRepository repository;
+    public EmployeeRestController(IEmployeeRepository repository) {
+        this.repository = repository;
+    }
 
     @Operation(summary = "Create a new Employee")
     @ApiResponses({
@@ -54,14 +57,15 @@ public class EmployeeRestController {
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable Integer id) {
         log.info("Fetching employee with ID: {}", id);
-        Optional<Employee> optional = repository.findById(id);
-        if (optional.isPresent()) {
-            log.debug("Employee found: {}", optional.get());
-            return ResponseEntity.ok(optional.get());
-        } else {
-            log.error("Employee not found with ID: {}", id);
-            return ResponseEntity.notFound().build();
-        }
+        return repository.findById(id)
+                .map(emp -> {
+                    log.debug("Employee found: {}", emp);
+                    return ResponseEntity.ok(emp);
+                })
+                .orElseGet(() -> {
+                    log.error("Employee not found with ID: {}", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
 
     @Operation(summary = "Update an existing Employee")
@@ -82,7 +86,8 @@ public class EmployeeRestController {
                     Employee updated = repository.save(emp);
                     log.debug("Updated employee: {}", updated);
                     return ResponseEntity.ok(updated);
-                }).orElseGet(() -> {
+                })
+                .orElseGet(() -> {
                     log.error("Cannot update — employee not found with ID: {}", id);
                     return ResponseEntity.notFound().build();
                 });
@@ -104,5 +109,14 @@ public class EmployeeRestController {
             log.error("Cannot delete — employee not found with ID: {}", id);
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @Operation(summary = "Get total count of Employees")
+    @ApiResponse(responseCode = "200", description = "Total employee count fetched")
+    @GetMapping("/count")
+    public ResponseEntity<Long> fetchEmployeeCount() {
+        long count = repository.count();
+        log.info("Total employee count: {}", count);
+        return ResponseEntity.ok(count);
     }
 }
