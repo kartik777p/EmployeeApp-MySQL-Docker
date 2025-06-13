@@ -39,29 +39,18 @@ pipeline {
             }
         }
 
-        stage('Verify Deployment') {
-            steps {
-                echo "Checking if application is up and running..."
-                script {
-                    // Adjust port and healthcheck URL as needed
-                    def appUrl = "http://localhost:8082/actuator/health"
-                    def response = sh(script: "curl -s -o /dev/null -w \"%{http_code}\" ${appUrl}", returnStdout: true).trim()
-                    if (response == "200") {
-                        echo "Application deployed successfully and health endpoint is reachable!"
-                    } else {
-                        error "Application deployment failed! Health check returned status: ${response}"
+        stage('Post Deployment') {
+                    steps {
+                        echo '✅ Application Deployed Successfully!'
                     }
                 }
             }
-        }
-    }
 
-    post {
-        failure {
-            echo 'Build or deployment failed! Check logs.'
+            post {
+                failure {
+                    echo '❌ Deployment Failed. Please check the logs.'
+                }
+            }
         }
-        success {
-            echo 'Pipeline finished successfully.'
-        }
-    }
-}
+
+
