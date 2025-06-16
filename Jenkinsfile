@@ -30,29 +30,23 @@ pipeline {
             }
         }
 
-
         stage('Deploy Application') {
             steps {
                 echo "Deploying application with docker-compose up..."
-                //stop existing running services
+                // Stop existing running services
                 sh 'docker-compose down'
-                //start new services
+                // Start new services in detached mode
                 sh 'docker-compose up -d'
             }
         }
+    }
 
-        stage('Post Deployment') {
-                    steps {
-                        echo '✅ Application Deployed Successfully!'
-                    }
-                }
-            }
-
-            post {
-                failure {
-                    echo '❌ Deployment Failed. Please check the logs.'
-                }
-            }
+    post {
+        success {
+            echo '✅ Pipeline completed successfully!'
         }
-
-
+        failure {
+            echo '❌ Deployment Failed. Please check the logs.'
+        }
+    }
+}
