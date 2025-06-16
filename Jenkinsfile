@@ -25,9 +25,11 @@ pipeline {
             steps {
                 echo "Building docker images using docker-compose..."
                 sh 'docker-compose build'
-                //sh 'docker-compose build --no-cache'
+                // If you want to force a clean build without cache:
+                // sh 'docker-compose build --no-cache'
             }
         }
+
 
         stage('Deploy Application') {
             steps {
