@@ -34,7 +34,9 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 echo "Deploying application with docker-compose up..."
+                //stop existing running services
                 sh 'docker-compose down'
+                //start new services
                 sh 'docker-compose up -d'
             }
         }
