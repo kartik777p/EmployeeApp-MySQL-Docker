@@ -25,6 +25,7 @@ pipeline {
             steps {
                 echo "Building docker images using docker-compose..."
                 sh 'docker-compose build'
+                //sh 'docker-compose build --no-cache'
             }
         }
 
@@ -32,9 +33,6 @@ pipeline {
             steps {
                 echo "Deploying application with docker-compose up..."
                 sh 'docker-compose down'
-                echo "After docker-compose down"
-                sh 'docker ps'
-                echo "Before docker-compose up "
                 sh 'docker-compose up -d'
             }
         }
